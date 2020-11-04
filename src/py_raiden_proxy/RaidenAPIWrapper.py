@@ -2,7 +2,7 @@ from json import JSONDecodeError
 
 import requests
 from attrdict import AttrDict
-from py_raiden_proxy.exceptions.exceptions import RaidenAPIException
+from py_raiden_proxy.exceptions.exceptions import RaidenAPIException, RaidenAPIConflictException
 from requests import RequestException
 
 
@@ -23,7 +23,7 @@ class RaidenAPIWrapper:
             f"{self.api}channels",
             headers=self.headers,
             json=json_data,
-            timeout=300
+            timeout=600
         )
         return self.check_http_code(res)
 
@@ -34,7 +34,7 @@ class RaidenAPIWrapper:
             f"{self.api}channels/{token}/{target}",
             headers=self.headers,
             json=json_data,
-            timeout=300,
+            timeout=600,
         )
 
         return self.check_http_code(res)
@@ -67,4 +67,7 @@ class RaidenAPIWrapper:
         try:
             response.raise_for_status()
         except RequestException as ex:
-            raise RaidenAPIException(decoded_response["errors"]) from ex
+            if response.status_code == 409:
+                raise RaidenAPIConflictException(decoded_response["errors"], response.status_code) from ex
+            else:
+                raise RaidenAPIException(decoded_response["errors"], response.status_code) from ex
