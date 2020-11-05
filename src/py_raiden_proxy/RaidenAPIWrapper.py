@@ -20,22 +20,22 @@ class RaidenAPIWrapper:
             res = requests.get(f"{self.api}channels/{token}/{partner}")
         else:
             res = requests.get(f"{self.api}channels")
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def get_token_network(self, token=None):
         if token:
             res = requests.get(f"{self.api}tokens/{token}")
         else:
             res = requests.get(f"{self.api}tokens")
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def get_raiden_version(self):
         res = requests.get(f"{self.api}version")
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def get_address(self) -> AttrDict:
         res = requests.get(f"{self.api}address")
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def get_payments(self, partner=None, token=None) -> List[AttrDict]:
         # Query all payments
@@ -44,7 +44,7 @@ class RaidenAPIWrapper:
         # Query payments with specific partner and token
         else:
             res = requests.get(f"{self.api}payments")
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def get_pending_transfer(self, token=None, partner=None):
         if token:
@@ -53,23 +53,23 @@ class RaidenAPIWrapper:
             res = requests.get(f"{self.api}pending_transfers/{token}/{partner}")
         else:
             res = requests.get(f"{self.api}pending_transfers")
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def get_connections(self):
         res = requests.get(f"{self.api}connections")
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def get_node_status(self):
         res = requests.get(f"{self.api}status")
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def leave_token_network(self, token):
         res = requests.delete(f"{self.api}connections/{token}")
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def register_token(self, token):
         res = requests.put(f"{self.api}tokens/{token}")
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def open_channel(self, partner, deposit, token, settle_timeout=500) -> AttrDict:
         json_data = {
@@ -85,7 +85,7 @@ class RaidenAPIWrapper:
             json=json_data,
             timeout=600
         )
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def fund_channel(self, partner, deposit, token) -> AttrDict:
         json_data = {"total_deposit": deposit,}
@@ -97,7 +97,7 @@ class RaidenAPIWrapper:
             timeout=600,
         )
 
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def transfer(self, partner, amount, token, identifier=None, ) -> AttrDict:
         json_data = {'amount': amount, }
@@ -111,7 +111,7 @@ class RaidenAPIWrapper:
             json=json_data,
         )
 
-        return self.handle_response(res)
+        return self._handle_response(res)
 
     def mint_tokens(self, token, receiver, amount):
         test_api = self.api + "_testing/"
@@ -124,9 +124,9 @@ class RaidenAPIWrapper:
             headers=self.headers,
             json=json_data,
         )
-        return self.handle_response(res)
+        return self._handle_response(res)
 
-    def handle_response(self, response):
+    def _handle_response(self, response):
 
         try:
             response_json = response.json()
