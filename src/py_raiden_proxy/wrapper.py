@@ -1,11 +1,42 @@
 from json import JSONDecodeError
+import re
 
 import requests
+from enum import Enum
 from typing import List
 from attrdict import AttrDict
 from py_raiden_proxy.exceptions.exceptions import RaidenAPIException, RaidenAPIConflictException, \
     InvalidAPIResponse
 from requests import RequestException
+
+
+HEX_ADDRESS_REGEX = r'(0x)[a-fA-F0-9]{40}'
+REGEX_404_NO_CHANNEL = re.compile(f"^Channel with partner '{HEX_ADDRESS_REGEX}' for token '{HEX_ADDRESS_REGEX}' could not be found.$")
+
+
+def attrdict_me(object):
+    try:
+        result = AttrDict(object)
+    except ValueError:
+        result = object
+    return result
+
+
+def exception_matches(ex, status_code, error_message_regexes=None):
+    if not isinstance(ex, RaidenAPIException):
+        return False
+    # unfortunately, the attributes are not directly accessible in exceptions, but
+    # are simply stored in a list
+    ex_error_messages, ex_status_code = ex.args
+    if ex_status_code == status_code:
+        if error_message_regexes:
+            # not CPU critical, don't compile to piped regex
+            for error_message in ex_error_messages:
+                if any(regex.match(error_message) for regex in error_message_regexes):
+                    return True
+        else:
+            return True
+    return False
 
 
 class RaidenAPIWrapper:
@@ -14,13 +45,23 @@ class RaidenAPIWrapper:
         self.headers = {'Content-Type': 'application/json', }
 
     def get_channels(self, token=None, partner=None) -> List[AttrDict]:
-        if token:
-            res = requests.get(f"{self.api}channels/{token}")
-        elif token and partner:
+        if token and partner:
             res = requests.get(f"{self.api}channels/{token}/{partner}")
+        elif token:
+            res = requests.get(f"{self.api}channels/{token}")
         else:
             res = requests.get(f"{self.api}channels")
-        return self._handle_response(res)
+        try:
+            handled_response = self._handle_response(res)
+        except RaidenAPIException as ex:
+            if exception_matches(ex, 404, [REGEX_404_NO_CHANNEL]):
+                handled_response = []
+            else:
+                raise ex
+        if partner and not token:
+            return [channel for channel in handled_response if channel.partner_address == partner]
+        else:
+            return handled_response
 
     def get_token_network(self, token=None):
         if token:
@@ -126,8 +167,8 @@ class RaidenAPIWrapper:
         )
         return self._handle_response(res)
 
-    def _handle_response(self, response):
 
+    def _handle_response(self, response):
         try:
             response_json = response.json()
         except JSONDecodeError:
@@ -137,10 +178,10 @@ class RaidenAPIWrapper:
         if isinstance(response_json, list):
             decoded_response = []
             for item in response_json:
-                decoded_response.append(self.attrdict_me(item))
+                decoded_response.append(attrdict_me(item))
         # If it's a single dict
         else:
-            decoded_response = self.attrdict_me(response_json)
+            decoded_response = attrdict_me(response_json)
 
         # Successful request
         if 199 < response.status_code < 300:
@@ -155,10 +196,3 @@ class RaidenAPIWrapper:
                                                  response.status_code) from ex
             else:
                 raise RaidenAPIException(decoded_response["errors"], response.status_code) from ex
-
-    def attrdict_me(self, object):
-        try:
-            result = AttrDict(object)
-        except ValueError:
-            result = object
-        return result
