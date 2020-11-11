@@ -9,12 +9,20 @@ from py_raiden_proxy.exceptions import (
     RaidenAPIException,
     RaidenAPIConflictException,
     InvalidAPIResponse,
+    NoRoute
 )
 from requests import RequestException
 
 
 HEX_ADDRESS_REGEX = r'(0x)[a-fA-F0-9]{40}'
 REGEX_404_NO_CHANNEL = re.compile(f"^Channel with partner '{HEX_ADDRESS_REGEX}' for token '{HEX_ADDRESS_REGEX}' could not be found.$")
+REGEX_409_NO_CHANNEL_USABLE = re.compile("^None of the existing channels could be used to complete the "
+                                         "transfer. From the [\\d]+ existing channels. "
+                                         "[\\d]+ are closed. [\\d]+ are not online. "
+                                         "[\\d]+ don't have a route to the target in the given "
+                                         "token network. [\\d]+ don't have enough capacity for "
+                                         "the requested transfer.$")
+REGEX_409_NO_ROUTE = re.compile("^Payment couldn't be completed because: there is no route available$")
 
 
 def attrdict_me(object):
@@ -31,7 +39,7 @@ def exception_matches(ex, status_code, error_message_regexes=None):
     # unfortunately, the attributes are not directly accessible in exceptions, but
     # are simply stored in a list
     ex_error_messages, ex_status_code = ex.args
-    if ex_status_code == status_code:
+    if int(ex_status_code) == status_code:
         if error_message_regexes:
             # not CPU critical, don't compile to piped regex
             for error_message in ex_error_messages:
@@ -154,8 +162,13 @@ class RaidenAPIWrapper:
             headers=self.headers,
             json=json_data,
         )
-
-        return self._handle_response(res)
+        try:
+            return self._handle_response(res)
+        except RaidenAPIException as ex:
+            if exception_matches(ex, 409, [REGEX_409_NO_ROUTE, REGEX_409_NO_CHANNEL_USABLE]):
+                raise NoRoute(str(ex)) from ex
+            else:
+                raise ex
 
     def mint_tokens(self, token, receiver, amount):
         test_api = self.api + "_testing/"
@@ -176,7 +189,6 @@ class RaidenAPIWrapper:
             response_json = response.json()
         except JSONDecodeError:
             raise InvalidAPIResponse()
-
         # For some get endpoints the result will be a list of jsons
         if isinstance(response_json, list):
             decoded_response = []
@@ -194,8 +206,23 @@ class RaidenAPIWrapper:
         try:
             response.raise_for_status()
         except RequestException as ex:
-            if response.status_code == 409:
-                raise RaidenAPIConflictException(decoded_response["errors"],
-                                                 response.status_code) from ex
+            errors = decoded_response.get('errors')
+            if errors is not None:
+                error_messages = listify_string(errors)
+                if response.status_code == 409:
+                    raise RaidenAPIConflictException(error_messages,
+                                                     response.status_code) from ex
+                else:
+                    raise RaidenAPIException(error_messages, response.status_code) from ex
             else:
-                raise RaidenAPIException(decoded_response["errors"], response.status_code) from ex
+                raise ex
+
+def listify_string(str_or_list):
+    if isinstance(str_or_list, str):
+        return [str_or_list]
+    elif isinstance(str_or_list, (list, tuple)):
+        return str_or_list
+    else:
+        raise TypeError(f'Input was expected to be a list or string, not a {type(str_or_list)}.')
+
+
