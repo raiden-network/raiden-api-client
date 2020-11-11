@@ -5,8 +5,11 @@ import requests
 from enum import Enum
 from typing import List
 from attrdict import AttrDict
-from py_raiden_proxy.exceptions.exceptions import RaidenAPIException, RaidenAPIConflictException, \
-    InvalidAPIResponse
+from py_raiden_proxy.exceptions import (
+    RaidenAPIException,
+    RaidenAPIConflictException,
+    InvalidAPIResponse,
+)
 from requests import RequestException
 
 
