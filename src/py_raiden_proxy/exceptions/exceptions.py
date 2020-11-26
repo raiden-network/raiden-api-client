@@ -20,3 +20,7 @@ class RaidenAPIConflictException(RaidenAPIException):
 
 class InvalidAPIResponse(RaidenAPIWrapperException):
     """The response was not valid json"""
+
+
+class InvalidInput(RaidenAPIWrapperException):
+    """The provided input is insufficient"""

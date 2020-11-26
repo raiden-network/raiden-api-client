@@ -6,7 +6,8 @@ from attrdict import AttrDict
 from py_raiden_proxy.exceptions.exceptions import (
     RaidenAPIException,
     RaidenAPIConflictException,
-    InvalidAPIResponse
+    InvalidAPIResponse,
+    InvalidInput
 )
 from requests import RequestException
 
@@ -35,6 +36,8 @@ class RaidenAPIWrapper:
             res = requests.get(f"{self.api}channels/{token}/{partner}")
         elif token:
             res = requests.get(f"{self.api}channels/{token}")
+        elif partner:
+            raise InvalidInput
         else:
             res = requests.get(f"{self.api}channels")
         return self._handle_response(res)
@@ -56,18 +59,22 @@ class RaidenAPIWrapper:
 
     def get_payments(self, partner=None, token=None) -> List[AttrDict]:
         # Query all payments
-        if None not in (partner, token):
+        if token and partner:
             res = requests.get(f"{self.api}payments/{token}/{partner}")
         # Query payments with specific partner and token
+        elif partner or token:
+            raise InvalidInput
         else:
             res = requests.get(f"{self.api}payments")
         return self._handle_response(res)
 
     def get_pending_transfer(self, token=None, partner=None):
-        if token:
-            res = requests.get(f"{self.api}pending_transfers/{token}")
-        elif token and partner:
+        if token and partner:
             res = requests.get(f"{self.api}pending_transfers/{token}/{partner}")
+        elif token:
+            res = requests.get(f"{self.api}pending_transfers/{token}")
+        elif partner:
+            raise InvalidInput
         else:
             res = requests.get(f"{self.api}pending_transfers")
         return self._handle_response(res)
@@ -142,7 +149,7 @@ class RaidenAPIWrapper:
 
         return self._handle_response(res)
 
-    def mint_tokens(self, receiver, token,  amount):
+    def mint_tokens(self, receiver, token, amount):
         test_api = self.api + "_testing/"
         json_data = {
             "to": receiver,
