@@ -3,21 +3,38 @@ from json import JSONDecodeError
 import requests
 from typing import List
 from attrdict import AttrDict
-from py_raiden_proxy.exceptions.exceptions import RaidenAPIException, RaidenAPIConflictException, \
+from py_raiden_proxy.exceptions.exceptions import (
+    RaidenAPIException,
+    RaidenAPIConflictException,
     InvalidAPIResponse
+)
 from requests import RequestException
 
 
+def attrdict_me(object):
+    try:
+        result = AttrDict(object)
+    except ValueError:
+        result = object
+    return result
+
+
 class RaidenAPIWrapper:
-    def __init__(self, ip, port, version="v1"):
+    def __init__(self, ip, port, version="v1", request_timeout=800):
         self.api = f"http://{ip}:{port}/api/{version}/"
         self.headers = {'Content-Type': 'application/json', }
+        self.request_timeout = request_timeout
 
     def get_channels(self, token=None, partner=None) -> List[AttrDict]:
-        if token:
-            res = requests.get(f"{self.api}channels/{token}")
-        elif token and partner:
+        """
+        This returns a list, except for when token AND partner is provided, then
+        ONE channel or None is returned.
+        This interface is not very intuitive, but mirrors the interface of the Raiden API.
+        """
+        if token and partner:
             res = requests.get(f"{self.api}channels/{token}/{partner}")
+        elif token:
+            res = requests.get(f"{self.api}channels/{token}")
         else:
             res = requests.get(f"{self.api}channels")
         return self._handle_response(res)
@@ -71,7 +88,7 @@ class RaidenAPIWrapper:
         res = requests.put(f"{self.api}tokens/{token}")
         return self._handle_response(res)
 
-    def open_channel(self, partner, deposit, token, settle_timeout=500) -> AttrDict:
+    def open_channel(self, partner, token, deposit, settle_timeout=500) -> AttrDict:
         json_data = {
             "partner_address": partner,
             "settle_timeout": settle_timeout,
@@ -87,23 +104,35 @@ class RaidenAPIWrapper:
         )
         return self._handle_response(res)
 
-    def fund_channel(self, partner, deposit, token) -> AttrDict:
-        json_data = {"total_deposit": deposit,}
+    def fund_channel(self, partner, token, deposit) -> AttrDict:
+        json_data = {"total_deposit": deposit, }
 
         res = requests.patch(
             f"{self.api}channels/{token}/{partner}",
             headers=self.headers,
             json=json_data,
-            timeout=600,
+            timeout=self.request_timeout,
         )
 
         return self._handle_response(res)
 
-    def transfer(self, partner, amount, token, identifier=None, ) -> AttrDict:
+    def close_channel(self, partner, token) -> AttrDict:
+        json_data = {"state": "closed", }
+
+        res = requests.patch(
+            f"{self.api}channels/{token}/{partner}",
+            headers=self.headers,
+            json=json_data,
+            timeout=self.request_timeout,
+        )
+
+        return self._handle_response(res)
+
+    def transfer(self, partner, token, amount, identifier=None, ) -> AttrDict:
         json_data = {'amount': amount, }
 
         if identifier:
-            json_data['identifier'] = identifier
+            json_data["identifier"] = identifier
 
         res = requests.post(
             f"{self.api}payments/{token}/{partner}",
@@ -113,7 +142,7 @@ class RaidenAPIWrapper:
 
         return self._handle_response(res)
 
-    def mint_tokens(self, token, receiver, amount):
+    def mint_tokens(self, receiver, token,  amount):
         test_api = self.api + "_testing/"
         json_data = {
             "to": receiver,
@@ -127,7 +156,6 @@ class RaidenAPIWrapper:
         return self._handle_response(res)
 
     def _handle_response(self, response):
-
         try:
             response_json = response.json()
         except JSONDecodeError:
@@ -137,10 +165,10 @@ class RaidenAPIWrapper:
         if isinstance(response_json, list):
             decoded_response = []
             for item in response_json:
-                decoded_response.append(self.attrdict_me(item))
+                decoded_response.append(attrdict_me(item))
         # If it's a single dict
         else:
-            decoded_response = self.attrdict_me(response_json)
+            decoded_response = attrdict_me(response_json)
 
         # Successful request
         if 199 < response.status_code < 300:
@@ -155,10 +183,3 @@ class RaidenAPIWrapper:
                                                  response.status_code) from ex
             else:
                 raise RaidenAPIException(decoded_response["errors"], response.status_code) from ex
-
-    def attrdict_me(self, object):
-        try:
-            result = AttrDict(object)
-        except ValueError:
-            result = object
-        return result

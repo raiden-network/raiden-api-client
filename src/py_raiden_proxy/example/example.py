@@ -1,5 +1,8 @@
 from py_raiden_proxy.wrapper import RaidenAPIWrapper
-from py_raiden_proxy.exceptions.exceptions import RaidenAPIException, RaidenAPIConflictException
+from py_raiden_proxy.exceptions.exceptions import (
+    RaidenAPIException,
+    RaidenAPIConflictException
+)
 
 URL = "localhost"
 PORT = "5001"
@@ -38,7 +41,9 @@ def get_channel(token=None, partner=None):
 
 def get_payments():
     print(f"List of all payments: {rdn.get_payments()}")
-    print(f"List of payments with Hub: {rdn.get_payments(partner=PARTNER, token=TOKEN)}")
+    print(
+        f"List of payments with Hub: {rdn.get_payments(partner=PARTNER, token=TOKEN)}"
+    )
 
 
 def get_address():

@@ -13,7 +13,8 @@ class RaidenAPIException(RaidenAPIWrapperException):
 
 class RaidenAPIConflictException(RaidenAPIException):
     """Response statuscode was 409"""
-    def __int__(self, error_messages: Any):
+
+    def __init__(self, error_messages: Any):
         super().__int__(error_messages, 409)
 
 
