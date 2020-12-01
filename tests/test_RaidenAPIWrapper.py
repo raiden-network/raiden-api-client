@@ -1,11 +1,8 @@
-import json
-
 import pytest
-import responses
-from requests.models import Response
-from py_raiden_proxy.wrapper import RaidenAPIWrapper
-from py_raiden_proxy.exceptions.exceptions import RaidenAPIException, RaidenAPIConflictException, \
+from py_raiden_proxy.exceptions import RaidenAPIException, RaidenAPIConflictException, \
     InvalidAPIResponse
+from py_raiden_proxy.wrapper import RaidenAPIWrapper
+from requests.models import Response
 
 URL = "localhost"
 PORT = "5001"

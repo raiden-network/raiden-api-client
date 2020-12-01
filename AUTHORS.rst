@@ -2,4 +2,5 @@
 Contributors
 ============
 
-* Maximilian <maxdacjs@gmail.com>
+* Maximilian Langenfeld
+* Oliver Bünting
