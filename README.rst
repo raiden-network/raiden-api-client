@@ -1,6 +1,6 @@
-===============
-py-raiden-proxy
-===============
+=================
+raiden-api-client
+=================
 
 
 Add a short description here!
