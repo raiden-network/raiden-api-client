@@ -6,7 +6,6 @@ from py_raiden_proxy.wrapper import RaidenAPIWrapper
 URL = "localhost"
 PORT = "5001"
 TOKEN = "0x3ed0DaEDC3217615bde34FEDd023bC81ae49251B"
-NEW_TOKEN = "0x7358Dd6Ebce0b9311CEBf8211CCa53230abEA8f8"
 PARTNER = "0x1F916ab5cf1B30B22f24Ebf435f53Ee665344Acf"  # Raiden Hub
 
 rdn = RaidenAPIWrapper(ip=URL, port=PORT)
