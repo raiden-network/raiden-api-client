@@ -16,7 +16,7 @@ pip install raiden-api-client
 ```python
 import raiden-api-client
 
-raiden = raiden-api-client.RaidenAPIWrapper(ip=localhost, port=8545) # Parity running at localhost:8545
+raiden = raiden-api-client.RaidenAPIWrapper(ip="localhost", port=8545) # Parity running at localhost:8545
 
 raiden.transfer(
    partner = "0x0000000000000000000000000000000000000000",
@@ -47,6 +47,7 @@ Further examples can be found in the example folder.
 - get_node_status() -> AttrDict
 ```
 
+Checkout the [raiden api docs](https://github.com/raiden-network/raiden/blob/develop/docs/rest_api.rst) for further information about the returned objects.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
