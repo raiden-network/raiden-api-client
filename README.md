@@ -1,6 +1,6 @@
 # raiden api client
 
-The raiden api client wraps the API of [raiden](https://github.com/raiden-network/raiden). It simplifies the usage of [raidens api](https://docs.raiden.network/raiden-api-1/resources) to a few lines.
+The raiden api client wraps the API of [raiden](https://github.com/raiden-network/raiden). It simplifies the usage of [raiden's api](https://docs.raiden.network/raiden-api-1/resources) to a few lines.
 
 
 ## Installation
