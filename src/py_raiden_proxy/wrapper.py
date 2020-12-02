@@ -49,7 +49,7 @@ class RaidenAPIWrapper:
             res = requests.get(f"{self.api}tokens")
         return self._handle_response(res)
 
-    def get_raiden_version(self) -> str:
+    def get_raiden_version(self) -> AttrDict:
         res = requests.get(f"{self.api}version")
         return self._handle_response(res)
 

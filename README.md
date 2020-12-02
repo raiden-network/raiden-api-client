@@ -25,6 +25,28 @@ raiden.transfer(
 ```
 Further examples can be found in the example folder.
 
+### Available Methods
+
+
+```python
+- mint_tokens(receiver, token, amount) -> AttrDict
+- register_token(token) -> AttrDict
+- open_channel(partner, token, deposit, settle_timeout=500) -> AttrDict
+- transfer(partner, token, amount, identifier=None ) -> AttrDict
+- fund_channel(partner, token, deposit) -> AttrDict
+- close_channel(partner, token) -> AttrDict
+- leave_token_network(token) -> List[str]
+
+- get_channels(token=None, partner=None) -> List[AttrDict]
+- get_payments(partner=None, token=None) -> List[AttrDict]
+- get_token_network(token=None) -> AttrDict
+- get_raiden_version() -> AttrDict
+- get_address() -> AttrDict
+- get_pending_transfer(token=None, partner=None) -> List[AttrDict]
+- get_connections() -> AttrDict
+- get_node_status() -> AttrDict
+```
+
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
