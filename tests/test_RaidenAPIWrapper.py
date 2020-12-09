@@ -1,7 +1,7 @@
 import pytest
-from py_raiden_proxy.exceptions import RaidenAPIException, RaidenAPIConflictException, \
+from raiden_api_client.exceptions import RaidenAPIException, RaidenAPIConflictException, \
     InvalidAPIResponse
-from py_raiden_proxy.wrapper import RaidenAPIWrapper
+from raiden_api_client.wrapper import RaidenAPIWrapper
 from requests.models import Response
 
 URL = "localhost"

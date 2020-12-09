@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Setup file for py_raiden_proxy.
+    Setup file for raiden_api_client.
     Use setup.cfg to configure your project.
 
     This file was generated with PyScaffold 3.2.3.

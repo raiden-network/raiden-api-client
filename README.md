@@ -8,15 +8,15 @@ The raiden api client wraps the API of [raiden](https://github.com/raiden-networ
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install raiden API client.
 
 ```bash
-pip install raiden-api-client
+pip install raiden_api_client
 ```
 
 ## Usage
 
 ```python
-import raiden-api-client
+import raiden_api_client
 
-raiden = raiden-api-client.RaidenAPIWrapper(ip="localhost", port=8545) # Parity running at localhost:8545
+raiden = raiden_api_client.RaidenAPIWrapper(ip="localhost", port=8545) # Parity running at localhost:8545
 
 raiden.transfer(
    partner = "0x0000000000000000000000000000000000000000",

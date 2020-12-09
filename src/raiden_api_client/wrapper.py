@@ -3,7 +3,7 @@ from json import JSONDecodeError
 import requests
 from typing import List
 from attrdict import AttrDict
-from py_raiden_proxy.exceptions import (
+from raiden_api_client.exceptions import (
     RaidenAPIException,
     RaidenAPIConflictException,
     InvalidAPIResponse,

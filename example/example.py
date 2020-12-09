@@ -1,7 +1,7 @@
-from py_raiden_proxy.exceptions import (
+from raiden_api_client.exceptions import (
     RaidenAPIConflictException
 )
-from py_raiden_proxy.wrapper import RaidenAPIWrapper
+from raiden_api_client.wrapper import RaidenAPIWrapper
 
 URL = "localhost"
 PORT = "5001"
