@@ -168,13 +168,15 @@ class RaidenAPIWrapper:
         except JSONDecodeError:
             raise InvalidAPIResponse()
 
-        # For some get endpoints the result will be a list of jsons
-        if isinstance(response_json, list):
+        if response_json is None:
+            decoded_response = AttrDict()
+        elif isinstance(response_json, list):
+            # For some get endpoints the result will be a list of jsons
             decoded_response = []
             for item in response_json:
                 decoded_response.append(attrdict_me(item))
-        # If it's a single dict
         else:
+            # If it's a single dict
             decoded_response = attrdict_me(response_json)
 
         # Successful request
